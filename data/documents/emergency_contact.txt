@@ -1,0 +1,4 @@
+Emergency Contacts
+IT Support: it@example.com, ext 101.
+HR: hr@example.com, ext 102.
+Facilities: facilities@example.com, ext 103.

@@ -1,0 +1,2 @@
+Product Specs: Y200 Switch
+The Y200 Gigabit Switch features 8 ports, plug-and-play setup, and energy-saving technology. It does not support PoE.

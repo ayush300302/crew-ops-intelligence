@@ -1,0 +1,3 @@
+Ticket #003 - Customer: Gamma Inc
+Issue: Inquiry about bulk discount for X100.
+Resolution: Referred to sales team. Ticket closed.

@@ -1,0 +1,2 @@
+Inventory Guidelines
+All stock levels must be checked weekly. Minimum stock for X100 is 50 units. Minimum for Y200 is 30 units. Reorder when dropping below minimum.
