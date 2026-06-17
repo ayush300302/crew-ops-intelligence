@@ -1,9 +1,35 @@
 import os
+import time
 from dotenv import load_dotenv
-from crewai import Agent, Task, Crew, Process
+from crewai import Agent, Task, Crew, Process, LLM
 
 # If the user doesn't have a specific API key set, use what's available
 load_dotenv()
+
+# Tell litellm to silently drop params that providers don't support
+import litellm
+import functools
+litellm.drop_params = True
+
+# Patch: strip Anthropic-style 'cache_breakpoint' from messages before sending
+_original_completion = litellm.completion
+
+@functools.wraps(_original_completion)
+def _patched_completion(*args, **kwargs):
+    # Remove cache_breakpoint from messages
+    messages = kwargs.get("messages", [])
+    for msg in messages:
+        msg.pop("cache_breakpoint", None)
+        msg.pop("cache_control", None)
+        # Also check content blocks
+        if isinstance(msg.get("content"), list):
+            for block in msg["content"]:
+                if isinstance(block, dict):
+                    block.pop("cache_breakpoint", None)
+                    block.pop("cache_control", None)
+    return _original_completion(*args, **kwargs)
+
+litellm.completion = _patched_completion
 
 # We will use MCPServerAdapter to expose our FastMCP tools to CrewAI
 # According to CrewAI docs for MCP:
@@ -28,12 +54,26 @@ def run_crew():
     with MCPServerAdapter(mcp_server_params) as mcp_tools:
         print("Successfully connected to MCP Server!")
         
+        # Configure LLM - Using Groq (free tier, generous rate limits)
+        groq_api_key = os.environ.get("GROQ_API_KEY", "")
+        if not groq_api_key:
+            print("ERROR: GROQ_API_KEY not found in .env file!")
+            return
+
+        llm = LLM(
+            model="groq/llama-3.1-8b-instant",
+            api_key=groq_api_key,
+            temperature=0.7
+        )
+        print(f"Using LLM: groq/llama-3.1-8b-instant")
+
         # Define Agents
         researcher = Agent(
             role="Operations Researcher",
             goal="Find relevant documents and records to answer business questions accurately.",
             backstory="You are an expert operations analyst who can quickly search through policies, support tickets, and inventory records to find facts.",
             tools=mcp_tools,
+            llm=llm,
             verbose=True,
             allow_delegation=False,
             max_iter=10 # Loop control to prevent runaway agents
@@ -44,6 +84,7 @@ def run_crew():
             goal="Synthesize research findings into clear, sourced markdown reports.",
             backstory="You are a meticulous technical writer. You only state facts that are backed by retrieved documents or records, and you always cite your sources.",
             tools=mcp_tools,
+            llm=llm,
             verbose=True,
             allow_delegation=False,
             max_iter=10
@@ -57,12 +98,19 @@ def run_crew():
             Research the following question using your tools:
             "{question}"
             
-            Steps:
-            1. Search the documents for the product specs to find the warranty period.
-            2. Search the documents for the support ticket from Acme Corp.
-            3. Read any relevant inventory records if necessary (e.g., search for Acme Corp's record).
+            IMPORTANT INSTRUCTIONS FOR USING TOOLS:
+            - The search_documents tool does simple keyword matching. Use SHORT, SINGLE-WORD queries.
+            - For example, search for "warranty" (not "warranty period for X100 Router").
+            - Search for "acme" to find Acme Corp tickets (not "support ticket from Acme Corp").
+            - Search for "x100" to find X100 Router info.
+            - Use read_record with record IDs like "R001" to look up inventory records.
             
-            Return a summary of all the facts you found, including the exact document names or record IDs where you found them.
+            Steps:
+            1. Search documents with query "warranty" to find the warranty period.
+            2. Search documents with query "acme" to find the support ticket from Acme Corp.
+            3. Use read_record with "R001" to check Acme Corp's inventory record.
+            
+            Return a summary of ALL the facts you found, including the exact document names or record IDs where you found them.
             """,
             expected_output="A detailed summary of facts with explicit citations to the document names or record IDs.",
             agent=researcher
