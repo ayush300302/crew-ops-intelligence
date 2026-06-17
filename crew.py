@@ -1,7 +1,15 @@
 import os
+import sys
 import time
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process, LLM
+
+# Reconfigure stdout/stderr to UTF-8 to prevent 'charmap' encoding errors with emojis on Windows
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 
 # If the user doesn't have a specific API key set, use what's available
 load_dotenv()
@@ -67,12 +75,16 @@ def run_crew():
         )
         print(f"Using LLM: groq/llama-3.1-8b-instant")
 
+        # Filter tools for specific agents
+        researcher_tools = [t for t in mcp_tools if t.name in ["search_documents", "read_record"]]
+        writer_tools = [t for t in mcp_tools if t.name == "save_report"]
+
         # Define Agents
         researcher = Agent(
             role="Operations Researcher",
             goal="Find relevant documents and records to answer business questions accurately.",
             backstory="You are an expert operations analyst who can quickly search through policies, support tickets, and inventory records to find facts.",
-            tools=mcp_tools,
+            tools=researcher_tools,
             llm=llm,
             verbose=True,
             allow_delegation=False,
@@ -83,7 +95,7 @@ def run_crew():
             role="Operations Report Writer",
             goal="Synthesize research findings into clear, sourced markdown reports.",
             backstory="You are a meticulous technical writer. You only state facts that are backed by retrieved documents or records, and you always cite your sources.",
-            tools=mcp_tools,
+            tools=writer_tools,
             llm=llm,
             verbose=True,
             allow_delegation=False,
