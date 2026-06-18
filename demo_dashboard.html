@@ -88,6 +88,42 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #3f3f46;
         }
+
+        /* Tab switching and Mermaid rendering layout fix */
+        .tab-content {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+            height: 0;
+            overflow: hidden;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .tab-content.active {
+            opacity: 1;
+            pointer-events: auto;
+            position: relative;
+            height: auto;
+            overflow: visible;
+        }
+        
+        .diag-wrapper {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+            height: 0;
+            overflow: hidden;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .diag-wrapper.active {
+            opacity: 1;
+            pointer-events: auto;
+            position: relative;
+            height: auto;
+            overflow: visible;
+        }
+
     </style>
 </head>
 <body class="text-zinc-100 min-h-full flex flex-col">
@@ -180,7 +216,7 @@
         <div class="flex-grow flex flex-col min-w-0">
             
             <!-- TERMINAL TAB -->
-            <div id="tab-content-terminal" class="tab-content flex-grow flex flex-col space-y-4">
+            <div id="tab-content-terminal" class="tab-content active flex-grow flex flex-col space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xl font-bold text-white">Agent CLI Console</h2>
@@ -212,7 +248,7 @@
             </div>
 
             <!-- DIAGRAMS TAB -->
-            <div id="tab-content-diagrams" class="tab-content hidden flex-grow flex flex-col space-y-4">
+            <div id="tab-content-diagrams" class="tab-content flex-grow flex flex-col space-y-4">
                 <div>
                     <h2 class="text-xl font-bold text-white">System Architecture & HLD</h2>
                     <p class="text-sm text-zinc-400">View live interactive design diagrams showing how agents, servers, and local databases connect</p>
@@ -228,10 +264,10 @@
                 </div>
 
                 <!-- Diagrams Viewer Container -->
-                <div class="border border-zinc-800 rounded-2xl bg-[#0a0a0c] p-6 shadow-xl flex items-center justify-center min-h-[500px]">
+                <div class="border border-zinc-800 rounded-2xl bg-[#0a0a0c] p-6 shadow-xl flex items-center justify-center min-h-[500px] relative w-full">
                     
                     <!-- Diagram 1: Architecture -->
-                    <div id="diag-content-arch" class="diag-content w-full flex justify-center">
+                    <div id="diag-content-arch" class="diag-wrapper active w-full flex justify-center">
                         <div class="mermaid w-full">
 graph TB
     User["User runs crew.py"]
@@ -294,7 +330,7 @@ graph TB
                     </div>
 
                     <!-- Diagram 2: Sequence -->
-                    <div id="diag-content-seq" class="diag-content hidden w-full">
+                    <div id="diag-content-seq" class="diag-wrapper w-full flex justify-center">
                         <div class="mermaid w-full">
 sequenceDiagram
     participant U as User
@@ -346,7 +382,7 @@ sequenceDiagram
                     </div>
 
                     <!-- Diagram 3: Component -->
-                    <div id="diag-content-comp" class="diag-content hidden w-full">
+                    <div id="diag-content-comp" class="diag-wrapper w-full flex justify-center">
                         <div class="mermaid w-full">
 graph LR
     subgraph Entry["Entry Point"]
@@ -401,7 +437,7 @@ graph LR
                     </div>
 
                     <!-- Diagram 4: Security -->
-                    <div id="diag-content-sec" class="diag-content hidden w-full">
+                    <div id="diag-content-sec" class="diag-wrapper w-full flex justify-center">
                         <div class="mermaid w-full">
 graph TD
     subgraph Threats["Threat Surface"]
@@ -435,7 +471,7 @@ graph TD
                     </div>
 
                     <!-- Diagram 5: Tech Stack -->
-                    <div id="diag-content-tech" class="diag-content hidden w-full">
+                    <div id="diag-content-tech" class="diag-wrapper w-full flex justify-center">
                         <div class="mermaid w-full">
 graph BT
     subgraph Stack["Technology Stack"]
@@ -472,7 +508,7 @@ graph BT
             </div>
 
             <!-- REPORT TAB -->
-            <div id="tab-content-report" class="tab-content hidden flex-grow flex flex-col space-y-4">
+            <div id="tab-content-report" class="tab-content flex-grow flex flex-col space-y-4">
                 <div>
                     <h2 class="text-xl font-bold text-white">Generated Report Output</h2>
                     <p class="text-sm text-zinc-400">View the markdown report dynamically compiled and saved by the Writer agent to the output directory</p>
@@ -519,7 +555,7 @@ graph BT
             </div>
 
             <!-- SANDBOX TAB -->
-            <div id="tab-content-sandbox" class="tab-content hidden flex-grow flex flex-col space-y-4">
+            <div id="tab-content-sandbox" class="tab-content flex-grow flex flex-col space-y-4">
                 <div>
                     <h2 class="text-xl font-bold text-white">MCP Tool Playground</h2>
                     <p class="text-sm text-zinc-400">Directly query the FastMCP server tools below and verify returned data</p>
@@ -573,7 +609,7 @@ graph BT
         // Tab switching logic
         function switchTab(tabId) {
             // Hide all contents
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             // Remove active style from tabs
             document.querySelectorAll('.tab-btn').forEach(el => {
                 el.classList.remove('bg-zinc-800', 'text-white', 'border', 'border-zinc-700/50', 'shadow-md', 'shadow-black/10');
@@ -581,7 +617,7 @@ graph BT
             });
 
             // Show target content
-            document.getElementById(`tab-content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-content-${tabId}`).classList.add('active');
             // Add active style to target tab
             const activeTab = document.getElementById(`tab-btn-${tabId}`);
             activeTab.classList.add('bg-zinc-800', 'text-white', 'border', 'border-zinc-700/50', 'shadow-md', 'shadow-black/10');
@@ -591,7 +627,7 @@ graph BT
         // Mermaid sub-diagram selector
         function selectDiagram(diagId) {
             // Hide all sub-contents
-            document.querySelectorAll('.diag-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.diag-wrapper').forEach(el => el.classList.remove('active'));
             // Remove active classes
             document.querySelectorAll('.diag-btn').forEach(el => {
                 el.classList.remove('bg-zinc-800', 'text-white', 'border', 'border-zinc-700');
@@ -599,7 +635,7 @@ graph BT
             });
 
             // Show selected diagram
-            document.getElementById(`diag-content-${diagId}`).classList.remove('hidden');
+            document.getElementById(`diag-content-${diagId}`).classList.add('active');
             // Set active class on button
             const activeBtn = document.getElementById(`diag-btn-${diagId}`);
             activeBtn.classList.add('bg-zinc-800', 'text-white', 'border', 'border-zinc-700');
