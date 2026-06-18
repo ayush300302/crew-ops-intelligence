@@ -318,4 +318,5 @@ The project uses **Groq** (free tier) with `llama-3.1-8b-instant` by default. Yo
 
 ## License
 
-Educational / hackathon project.
+This project is dual-licensed under both the Apache License, Version 2.0 and the MIT License. See [LICENSE](LICENSE) for details.
+
