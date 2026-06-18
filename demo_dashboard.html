@@ -624,12 +624,29 @@ graph BT
         // Sandbox response simulator database
         const mockDb = {
             search_documents: {
-                warranty: `--- product_specs_x100.txt ---\nProduct Name: X100 Enterprise Router\nManufacturer: Cisco Solutions\nWarranty Period: 2 Years\nRelease Date: 2025-10-12\nHardware Revision: Rev D\nPower Input: 12V 3A DC`,
-                acme: `--- support_ticket_001.txt ---\nTicket ID: STK-9801-X100\nClient: Acme Corp\nIssue: Constant disconnect under heavy load\nOpened: 2026-06-12\nResolution: Resolved with a firmware update to v2.1, which stabilized the router.\nClosed: 2026-06-15\nStatus: Closed`,
-                x100: `--- product_specs_x100.txt ---\nProduct Name: X100 Enterprise Router\nManufacturer: Cisco Solutions\nWarranty Period: 2 Years\nRelease Date: 2025-10-12\n\n--- support_ticket_001.txt ---\nTicket ID: STK-9801-X100\nClient: Acme Corp\nIssue: Constant disconnect under heavy load\nOpened: 2026-06-12\nResolution: Resolved with a firmware update to v2.1, which stabilized the router.`
+                warranty: `--- product_specs_x100.txt ---\nProduct Specs: X100 Router\nThe X100 Router supports Wi-Fi 6, up to 1Gbps speeds, and connects up to 50 devices. Warranty period is 2 years.`,
+                acme: `--- support_ticket_001.txt ---\nTicket #001 - Customer: Acme Corp\nIssue: X100 Router dropping connection.\nResolution: Firmware updated to v2.1. Router stabilized.`,
+                x100: `--- product_specs_x100.txt ---\nProduct Specs: X100 Router\nThe X100 Router supports Wi-Fi 6, up to 1Gbps speeds, and connects up to 50 devices. Warranty period is 2 years.\n\n--- support_ticket_001.txt ---\nTicket #001 - Customer: Acme Corp\nIssue: X100 Router dropping connection.\nResolution: Firmware updated to v2.1. Router stabilized.`,
+                y200: `--- product_specs_y200.txt ---\nProduct Specs: Y200 Switch\nThe Y200 Gigabit Switch features 8 ports, plug-and-play setup, and energy-saving technology. It does not support PoE.`,
+                beta: `--- support_ticket_002.txt ---\nTicket #002 - Customer: Beta LLC\nIssue: Requesting return for Y200 Switch.\nResolution: Processed under 30-day money-back guarantee.`,
+                switch: `--- product_specs_y200.txt ---\nProduct Specs: Y200 Switch\nThe Y200 Gigabit Switch features 8 ports, plug-and-play setup, and energy-saving technology. It does not support PoE.\n\n--- support_ticket_002.txt ---\nTicket #002 - Customer: Beta LLC\nIssue: Requesting return for Y200 Switch.\nResolution: Processed under 30-day money-back guarantee.`
             },
             read_record: {
-                R001: "record_id: R001\nclient: Acme Corp\nproduct: X100 Router\nunits_ordered: 5\nstatus: Shipped\nship_date: 2026-06-01\ntracking_id: TRK-9821819"
+                R001: "record_id: R001\ncustomer_name: Acme Corp\nproduct: X100 Router\nquantity: 5\nstatus: Shipped\norder_date: 2026-06-01",
+                R002: "record_id: R002\ncustomer_name: Beta LLC\nproduct: Y200 Switch\nquantity: 10\nstatus: Delivered\norder_date: 2026-06-02",
+                R003: "record_id: R003\ncustomer_name: Gamma Inc\nproduct: X100 Router\nquantity: 2\nstatus: Processing\norder_date: 2026-06-03",
+                R004: "record_id: R004\ncustomer_name: Delta Co\nproduct: Y200 Switch\nquantity: 1\nstatus: Shipped\norder_date: 2026-06-04",
+                R005: "record_id: R005\ncustomer_name: Epsilon Ltd\nproduct: X100 Router\nquantity: 20\nstatus: Pending\norder_date: 2026-06-05",
+                R006: "record_id: R006\ncustomer_name: Zeta Corp\nproduct: Y200 Switch\nquantity: 5\nstatus: Delivered\norder_date: 2026-06-01",
+                R007: "record_id: R007\ncustomer_name: Eta Inc\nproduct: X100 Router\nquantity: 3\nstatus: Shipped\norder_date: 2026-06-02",
+                R008: "record_id: R008\ncustomer_name: Theta LLC\nproduct: Y200 Switch\nquantity: 8\nstatus: Processing\norder_date: 2026-06-03",
+                R009: "record_id: R009\ncustomer_name: Iota Co\nproduct: X100 Router\nquantity: 1\nstatus: Delivered\norder_date: 2026-06-04",
+                R010: "record_id: R010\ncustomer_name: Kappa Ltd\nproduct: Y200 Switch\nquantity: 15\nstatus: Pending\norder_date: 2026-06-05",
+                R011: "record_id: R011\ncustomer_name: Lambda Corp\nproduct: X100 Router\nquantity: 7\nstatus: Shipped\norder_date: 2026-06-06",
+                R012: "record_id: R012\ncustomer_name: Mu Inc\nproduct: Y200 Switch\nquantity: 2\nstatus: Processing\norder_date: 2026-06-06",
+                R013: "record_id: R013\ncustomer_name: Nu LLC\nproduct: X100 Router\nquantity: 10\nstatus: Delivered\norder_date: 2026-06-07",
+                R014: "record_id: R014\ncustomer_name: Xi Co\nproduct: Y200 Switch\nquantity: 4\nstatus: Shipped\norder_date: 2026-06-07",
+                R015: "record_id: R015\ncustomer_name: Omicron Ltd\nproduct: X100 Router\nquantity: 6\nstatus: Pending\norder_date: 2026-06-07"
             }
         };
 
