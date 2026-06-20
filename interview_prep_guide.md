@@ -47,12 +47,23 @@ Use this guide to talk about this project confidently during technical interview
 * **Action**: I implemented a two-fold mitigation: 
   1. Sanitized the `title` parameter in `mcp_server.py` using character filtering to only allow alphanumeric characters and underscores.
   2. Implemented strict directory containment joining the title directly to our output folder path. 
-  Additionally, I set `max_iter=10` on the CrewAI agents to prevent runaway infinite planning loops from exhausting API token budgets.
-* **Result**: Created a secure, production-ready tool write boundary that fails gracefully on malicious payloads.
+### Story 4: Automating Deployment with a Secure CI/CD Containerization Pipeline
+* **Situation**: The application requires a precise Python environment (Python 3.12) and multiple complex dependencies (CrewAI, FastMCP, LiteLLM) to run. Without containment, manual local execution led to cross-platform compatibility issues, configuration drift, and untested deployments.
+* **Task**: Create a unified execution environment and automate the validation and deployment process so that every commit is tested and the package is built into a deployable container image automatically.
+* **Action**: 
+  1. I created a secure, lightweight `Dockerfile` using `python:3.12-slim` that isolates the execution dependencies and runs the agent crew orchestration by default.
+  2. I configured a multi-job **GitHub Actions** CI/CD pipeline. The first job (`test`) runs pytest on any push/PR to verify code health. The second job (`deploy`) triggers only on successful merges to the `main` branch, authenticates securely with GitHub Container Registry (GHCR) using the built-in `GITHUB_TOKEN`, and pushes the tagged Docker image.
+* **Result**: Automated delivery of the application. Developers get instant feedback on code stability, and operations teams can instantly run the fully configured agent container anywhere via a single `docker run` command.
 
 ---
 
 ## 4. Tough Interview Q&A
+
+### Q: "Why containerize a Python MCP server / agent team?"
+> "Python agent frameworks have deep dependency trees (such as Pydantic, LiteLLM, and system network utilities) that are highly sensitive to operating system versions and interpreter runtimes. By packaging the app inside Docker, we enforce standard execution on `python:3.12-slim` across all development and production environments. It also simplifies local deployment for end-users, since they only need Docker installed and do not need to manage virtual environments or Python packages."
+
+### Q: "How did you secure your CI/CD pipeline credentials?"
+> "I followed the principle of least privilege by using the built-in `${{ secrets.GITHUB_TOKEN }}` provided dynamically by GitHub Actions. Rather than hardcoding personal registry credentials or long-lived API keys, this token is temporary, automatically rotated, and scoped only to write to GitHub Packages (`packages: write`) for this specific repository. External API keys (like `GROQ_API_KEY`) are kept completely out of the image build and are injected safely as runtime environment variables during container launch."
 
 ### Q: "How would you scale this system to handle 100,000 documents instead of 10?"
 > "A simple keyword substring-match (`glob` search) will not scale to 100,000 files because it is `O(N)` and introduces high I/O latency. I would evolve the architecture by:
@@ -68,3 +79,4 @@ Use this guide to talk about this project confidently during technical interview
 > 1. **Unit Tests (`pytest`)**: Targeting the MCP tools directly to verify input validation (e.g., handling empty queries, missing record IDs, file writing success).
 > 2. **Integration Tests**: Running mock executions to ensure the adapter boots the server successfully and the sequential handover between the agents functions without crashing.
 > 3. **Manual Validation**: Checking the generated output report against the source documents to verify zero factual hallucinations."
+
