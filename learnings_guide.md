@@ -66,3 +66,31 @@ Developing agentic workflows is notoriously complex. We resolved several core in
 
 * **Mermaid Integration**: We learned to use Mermaid.js block markup to generate complex, visually appealing architecture and sequence diagrams directly inside markdown documentation.
 * **Dynamic Styling**: By using Mermaid's `config` frontmatter and `classDef` CSS definitions, we transformed default layouts into beautiful, premium dark-themed diagrams.
+
+---
+
+## 6. SDE Interview Prep: Real-World Problems vs. Our Solution
+
+Use this mapping during System Design and SDE-II/III architectural discussions to explain the business value and engineering patterns of the project.
+
+### Real-World Problem 1: The "Context-Switching" and Data Silo Bottleneck
+* **The Industry Pain Point**: In modern enterprises, operational data is fragmented. A support engineer or ops analyst has to query three different places (e.g., checking specifications PDFs in Sharepoint, searching tickets in Zendesk/CSV, and querying inventory in SQL databases) to answer a single question. This leads to high latency, manual mistakes, and high operational costs.
+* **How Our Solution Solves It**: We built an **orchestrated semantic bridge**. Instead of forcing a human to log into three tools, the agents programmatically query the data sources via the Model Context Protocol (MCP). The researcher fetches and connects the data, and the writer formats the final deliverable. This reduces operation turnaround times from hours to seconds.
+
+### Real-World Problem 2: Legacy API Sprawl and Integration Lock-In
+* **The Industry Pain Point**: Custom tool interfaces (like Slackbots or web apps) are tightly coupled to specific LLM client libraries or API shapes. If you build tools specifically for OpenAI's function calling, migrating to Claude, Gemini, or a local open-source LLM requires refactoring the entire codebase.
+* **How Our Solution Solves It**: We adopted the **Model Context Protocol (MCP)**. MCP functions as the **JDBC/ODBC driver for LLMs**. By exposing local data stores as standardized MCP server tools, the backend becomes completely model-agnostic. You can switch the LLM runner (e.g., from Groq to Anthropic) or the orchestrator (from CrewAI to LangChain) without modifying a single line of backend data-fetching logic.
+
+### Real-World Problem 3: The Untrusted Nature of Autonomous Agents (Security & Grounding)
+* **The Industry Pain Point**: In production, autonomous agents can hallucinate information, write files to unauthorized directories (Path Traversal), or run into infinite loops that generate massive API cloud bills.
+* **How Our Solution Solves It**: We implemented **strict logical boundaries** (Defense-in-Depth):
+  1. **Strict Tool Privilege Separation**: The Writer agent cannot run search queries (preventing it from writing reports based on empty search results), and the Researcher agent cannot save reports (preventing unauthorized writes).
+  2. **Security Sanitization**: Filenames are sanitized dynamically to prevent directory traversal (`../`).
+  3. **Loop Boundaries**: Running with `max_iter=10` limits the agent's thought loop budget, failing gracefully instead of incurring endless charges.
+
+### Real-World Problem 4: Environment Inconsistency and Lack of CD
+* **The Industry Pain Point**: Orchestrating multi-agent systems requires deep dependency trees (like Pydantic, LiteLLM, FastMCP) that behave differently on local machines vs. target servers. Testing changes manually is slow and error-prone.
+* **How Our Solution Solves It**: We established an automated delivery flow:
+  1. **Containerization (Docker)**: Guarantees a consistent Python 3.12 environment regardless of host OS.
+  2. **Continuous Integration (CI)**: Automatically validates tool execution and logic safety using pytest on every Pull Request.
+  3. **Continuous Deployment (CD)**: Automatically builds, tags, and pushes the production-ready Docker image to the GitHub Container Registry (GHCR) upon merging to `main`, ready for instant pulling.
